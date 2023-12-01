@@ -1,7 +1,7 @@
 import math
 from qiskit import QuantumRegister, QuantumCircuit
 
-from qvar import QVAR
+from QVAR import QVAR
 from ffqram import _encode_vectors
 from util import inv_stereo
 
@@ -12,16 +12,14 @@ def QOF(vectors):
     m = math.ceil(math.log2(M))
     n = math.ceil(math.log2(N))
     t = 2*m+n                   # number of index qubits
-    a_r_qubits = 1 + n + m - 2  # number of ancillas for controlled rotations
 
     d = QuantumRegister(1, 'd') # ancilla for the computation of differences
     r = QuantumRegister(1, 'r') # register qubit for ff-qram
     i = QuantumRegister(m, 'i') # register for indexing the first loading of the M records
     j = QuantumRegister(m, 'j') # register for indexing the second loading of the M records
     k = QuantumRegister(n, 'k') # register for indexing the N features of each records
-    ancillaRotation = QuantumRegister(a_r_qubits, 'x')
 
-    U = QuantumCircuit(d,r,k,i,j,ancillaRotation) # circuit for the computation of differences
+    U = QuantumCircuit(k,i,j,d,r) # circuit for the computation of differences
     
     U.h(d)
     U.h(i)
@@ -29,24 +27,25 @@ def QOF(vectors):
     U.h(k)
 
     # load the M records controlled by i
-    _encode_vectors(U, vectors, d, k, i, r, ancillaRotation)
+    _encode_vectors(U, vectors, d, k, i, r)
 
     U.x(d)
 
     # load the M records controlled by j
-    _encode_vectors(U, vectors, d, k, j, r, ancillaRotation)
+    _encode_vectors(U, vectors, d, k, j, r)
 
     # differences computation
     U.h(d)
     
     # variance computation
-    q_var = QVAR(U, var_index=list(range(2, 2+t)), version='FAE')
+    q_var = QVAR(U, var_index=list(range(t)), ps_index=[U.num_qubits-1], n_h_gates=t+2)
     
     return q_var
 
 def QODA(X, t):
 
     outliers = []
+    q = []
     for pivot in X:
         print("pivot " + str(pivot))
         tmp_X = X - pivot
@@ -56,6 +55,9 @@ def QODA(X, t):
         
         var = QOF(tmp_X)
         print("variance: " + str(var))
+
+        q.append(var)
+
         if var < t:
             outliers.append(pivot)
 
