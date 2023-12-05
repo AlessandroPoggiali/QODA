@@ -9,7 +9,7 @@ QODA uses [QVAR](https://github.com/AlessandroPoggiali/QVAR) to compute the vari
 
 To run a simple demostration of the QODA, follow these steps:
 * Make sure you have Qiskit installed on your computer
-* Install the QVAR package `pip install -i https://test.pypi.org/simple/ QVAR` (the PyPI version is not available yet)
+* Install the QVAR package `pip install QVAR` 
 * Clone this repo with `git clone https://github.com/AlessandroPoggiali/QODA.git`
 * Navigate to the HQFS directory and run the command `python3 test.py`
 
